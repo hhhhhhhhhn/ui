@@ -38,39 +38,6 @@ func (color *Color) ToSFColor() graphics.SfColor {
 	)
 }
 
-type Circle struct {
-	circle   graphics.Struct_SS_sfCircleShape
-	position system.SfVector2f
-}
-
-func (c *Circle) Draw(w graphics.Struct_SS_sfRenderWindow ,x float32, y float32,
-	width float32, height float32) {
-		if width < height {
-			graphics.SfCircleShape_setRadius(c.circle, width / 2)
-			y += (height - width) / 2
-		} else {
-			graphics.SfCircleShape_setRadius(c.circle, height / 2)
-			x += (width - height) / 2
-		}
-		c.position.SetX(x)
-		c.position.SetY(y)
-
-		graphics.SfCircleShape_setPosition(c.circle, c.position)
-		graphics.SfRenderWindow_drawShape(w, c.circle, graphics.SwigcptrSfRenderStates(0))
-}
-
-func (c *Circle) Clean() {
-	graphics.SfCircleShape_destroy(c.circle)
-	system.DeleteSfVector2f(c.position)
-}
-
-func NewCircle(color Color) Circle {
-	circle := graphics.SfCircleShape_create()
-	position := system.NewSfVector2f()
-	graphics.SfCircleShape_setFillColor(circle, color.ToSFColor())
-	return Circle{circle, position}
-}
-
 func main() {
 	vm := window.NewSfVideoMode()
 	defer window.DeleteSfVideoMode(vm)
@@ -100,8 +67,12 @@ func main() {
 	c := NewCircle(Color{255, 0, 255, 255})
 	c2 := NewCircle(Color{0, 0, 255, 255})
 	c3 := NewCircle(Color{0, 255, 255, 100})
+	f := LoadFont("/usr/share/fonts/TTF/DejaVuSans.ttf")
+	t := NewText(f, Color{0,0,0,255}, 20, "Text text text text text text text text text text text sdf¿sdf sdf sdf skjdfvbhs kdjfhsdfkghdkfuhgsd fjksgdfquisefhsf sdiufh sidfhsidf sdfiuhsd")
+	c3.SetOutlineColor(Color{255, 0, 255, 255})
+	c3.SetOutlineThickness(20)
 	c4 := NewCircle(Color{0, 100, 100, 255})
-	c5 := NewCircle(Color{0, 0, 255, 25})
+	c5 := NewRectangle(Color{0, 0, 255, 25})
 
 	/* Start the game loop */
 	for window.SfWindow_isOpen(w) > 0 {
@@ -135,6 +106,7 @@ func main() {
 		c3.Draw(w, 400, 350, 60, 60)
 		c4.Draw(w, 700, 400, 60, 60)
 		c5.Draw(w, 600, 300, 1000, 2500)
+		t.Draw(w, 400, 300, 300, 9)
 		graphics.SfRenderWindow_drawShape(w, circle, graphics.SwigcptrSfRenderStates(0))
 		graphics.SfRenderWindow_display(w)
 	}
