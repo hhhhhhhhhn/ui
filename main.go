@@ -18,7 +18,8 @@ type Widget interface {
 		width float32,
 		height float32,
 	)
-	Clean()
+	Clean() 
+	Init() ([]string, []func(Event))
 }
 
 
@@ -28,6 +29,8 @@ type Color struct {
 	Blue  byte
 	Alpha byte
 }
+
+type Event map[string]interface{}
 
 func (color *Color) ToSFColor() graphics.SfColor {
 	return graphics.SfColor_fromRGBA(
@@ -39,11 +42,12 @@ func (color *Color) ToSFColor() graphics.SfColor {
 }
 
 type App struct {
-	window graphics.Struct_SS_sfRenderWindow
-	view   graphics.Struct_SS_sfView
-	root   Widget
-	width  float32
-	height float32
+	window         graphics.Struct_SS_sfRenderWindow
+	view           graphics.Struct_SS_sfView
+	root           Widget
+	eventListeners map[string][]func(Event)
+	width          float32
+	height         float32
 }
 
 func NewApp(title string, width uint, height uint, root Widget) (app App) {
@@ -59,6 +63,17 @@ func NewApp(title string, width uint, height uint, root Widget) (app App) {
 	app.window = graphics.SfRenderWindow_create(vm, title, uint(window.SfResize|window.SfClose), cs)
 	app.view   = graphics.SfRenderWindow_getDefaultView(app.window)
 	app.root   = root
+
+	eventTypes, listeners := root.Init()
+	app.eventListeners = make(map[string][]func(Event))
+
+	for i := range listeners {
+		app.eventListeners[eventTypes[i]] = append(
+			app.eventListeners[eventTypes[i]],
+			listeners[i],
+		)
+	}
+
 	app.width  = float32(width)
 	app.height = float32(height)
 	return app
@@ -92,12 +107,24 @@ func (app *App) Run() {
 				app.height = float32(size.GetHeight())
 				app.width  = float32(size.GetWidth())
 				break
+			case window.SfEventType(window.SfEvtMouseMoved):
+				mouseMove := event.GetMouseMove()
+				x := mouseMove.GetX()
+				y := mouseMove.GetY()
+				for _, eventListener := range app.eventListeners["mouseMove"] {
+					eventListener(Event{"x": x, "y": y})
+				}
+				break
 			}
 		}
 		graphics.SfRenderWindow_clear(app.window, graphics.GetSfWhite())
 		app.root.Draw(app.window, 0, 0, app.width, app.height)
 		graphics.SfRenderWindow_display(app.window)
 	}
+}
+
+func (app *App) AddEventListener(eventType string, listener func(Event)) {
+	app.eventListeners[eventType] = append(app.eventListeners[eventType], listener)
 }
 
 func (app *App) Clean() {
@@ -107,13 +134,14 @@ func (app *App) Clean() {
 }
 
 func main() {
-	c := NewCircle(Color{0,255,255,55})
-	c2 := NewRectangle(Color{255,255,0,255})
+	f := LoadFont("/usr/share/fonts/TTF/DejaVuSans.ttf")
 	root := NewFixedLayout([]FixedLayoutArg{
-		{&c, 200, 200, 200, 200},
-		{&c2, 400, 300, 200, 200},
+		{NewCircle().SetBackgroundColor(Color{255,255,0,255}), 200, 200, 200, 200},
+		{NewRectangle().SetBackgroundColor(Color{0,0,255,255}), 400, 300, 200, 200},
+		{NewText(f, 40).SetContent("Color").SetColor(Color{255,255,0,100}), 400, 300, 200, 200},
+		{NewButton(f, 40).SetContent("Button").SetColor(Color{255,255,0,255}).SetBackgroundColor(Color{0,0,0,255}).SetHoverBackgroundColor(Color{100,100,100,255}), 700, 300, 200, 200},
 	})
-	app := NewApp("New app", 800, 600, &root)
+	app := NewApp("New app", 800, 600, root)
 	app.Run()
 	app.Clean()
 }

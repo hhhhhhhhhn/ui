@@ -7,8 +7,9 @@ import (
 
 type ShapeWidget interface {
 	Widget
-	SetOutlineColor(Color)
-	SetOutlineThickness(float32)
+	SetBackgroundColor(Color)    Widget
+	SetOutlineColor(Color)       Widget
+	SetOutlineThickness(float32) Widget
 }
 
 type Circle struct {
@@ -38,19 +39,29 @@ func (c *Circle) Clean() {
 	system.DeleteSfVector2f(c.position)
 }
 
-func (c *Circle) SetOutlineColor(color Color) {
+func (c *Circle) Init() ([]string, []func(Event)) {
+	return []string{}, []func(Event){}
+}
+
+func (c *Circle) SetOutlineColor(color Color) *Circle {
 	graphics.SfCircleShape_setOutlineColor(c.circle, color.ToSFColor())
+	return c
 }
 
-func (c *Circle) SetOutlineThickness(thickness float32) {
+func (c *Circle) SetOutlineThickness(thickness float32) *Circle {
 	graphics.SfCircleShape_setOutlineThickness(c.circle, thickness)
+	return c
 }
 
-func NewCircle(color Color) Circle {
+func (c *Circle) SetBackgroundColor(color Color) *Circle {
+	graphics.SfCircleShape_setFillColor(c.circle, color.ToSFColor())
+	return c
+}
+
+func NewCircle() *Circle {
 	circle := graphics.SfCircleShape_create()
 	position := system.NewSfVector2f()
-	graphics.SfCircleShape_setFillColor(circle, color.ToSFColor())
-	return Circle{circle: circle, position: position}
+	return &Circle{circle: circle, position: position}
 }
 
 type Rectangle struct {
@@ -79,19 +90,29 @@ func (r *Rectangle) Clean() {
 	system.DeleteSfVector2f(r.size)
 }
 
-func (r *Rectangle) SetOutlineColor(color Color) {
+func (r *Rectangle) Init() ([]string, []func(Event)) {
+	return []string{}, []func(Event){}
+}
+
+func (r *Rectangle) SetOutlineColor(color Color) *Rectangle {
 	graphics.SfRectangleShape_setOutlineColor(r.rectangle, color.ToSFColor())
+	return r
 }
 
-func (r *Rectangle) SetOutlineThickness(thickness float32) {
+func (r *Rectangle) SetOutlineThickness(thickness float32) *Rectangle {
 	graphics.SfRectangleShape_setOutlineThickness(r.rectangle, thickness)
+	return r
 }
 
-func NewRectangle(color Color) Rectangle {
+func (r *Rectangle) SetBackgroundColor(color Color) *Rectangle {
+	graphics.SfRectangleShape_setFillColor(r.rectangle, color.ToSFColor())
+	return r
+}
+
+func NewRectangle() *Rectangle {
 	rectangle := graphics.SfRectangleShape_create()
 	position := system.NewSfVector2f()
 	size := system.NewSfVector2f()
-	graphics.SfRectangleShape_setFillColor(rectangle, color.ToSFColor())
-	return Rectangle{rectangle: rectangle, position: position, size: size}
+	return &Rectangle{rectangle: rectangle, position: position, size: size}
 }
 

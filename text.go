@@ -13,14 +13,18 @@ func LoadFont(file string) Font {
 
 type TextWidget interface {
 	Widget
-	SetFont()
+	SetFont(Font)      Widget
+	SetContent(string) Widget
+	SetFontSize(uint)  Widget
+	SetColor(Color)    Widget
 }
 
 type Text struct {
 	TextWidget
 	text      graphics.Struct_SS_sfText
 	position  system.SfVector2f
-	lastWidth float32
+	redraw    bool
+	width     float32
 	fontSize  uint
 	content   string
 	font      Font
@@ -28,11 +32,13 @@ type Text struct {
 
 func (t *Text) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
 	width float32, height float32) {
-		if width != t.lastWidth {
+		if width != t.width || t.redraw {
 			graphics.SfText_setString(
 				t.text,
 				wrapWords(t.content, t.font, t.fontSize, width),
 			)
+			t.width = width
+			t.redraw = false
 		}
 
 		t.position.SetX(x)
@@ -47,14 +53,37 @@ func (t *Text) Clean() {
 	system.DeleteSfVector2f(t.position)
 }
 
-func NewText(font Font, color Color, fontSize uint, content string) Text {
+func (t *Text) Init() ([]string, []func(Event)) {
+	return []string{}, []func(Event){}
+}
+
+func (t *Text) SetFont(font Font) *Text {
+	graphics.SfText_setFont(t.text, font)
+	return t
+}
+
+func (t *Text) SetContent(content string) *Text {
+	t.content = content
+	t.redraw = true
+	return t
+}
+
+func (t *Text) SetFontSize(fontSize uint) *Text {
+	graphics.SfText_setCharacterSize(t.text, fontSize)
+	return t
+}
+func (t *Text) SetColor(color Color) *Text {
+	graphics.SfText_setFillColor(t.text, color.ToSFColor())
+	return t
+}
+
+func NewText(font Font, fontSize uint) *Text {
 	text := graphics.SfText_create()
 	graphics.SfText_setFont(text, font)
 	graphics.SfText_setCharacterSize(text, fontSize)
-	graphics.SfText_setFillColor(text, color.ToSFColor())
 
 	position := system.NewSfVector2f()
-	return Text{text: text, position: position, content: content, fontSize: fontSize, font: font}
+	return &Text{text: text, position: position, fontSize: fontSize, font: font}
 }
 
 func wrapWords(content string, font Font, fontSize uint, width float32) string {

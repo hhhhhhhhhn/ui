@@ -36,6 +36,15 @@ func (f *FixedLayout) Clean() {
 	}
 }
 
-func NewFixedLayout(widgets []FixedLayoutArg) FixedLayout {
-	return FixedLayout{widgets: widgets}
+func (f *FixedLayout) Init() (eventTypes []string, listeners []func(Event)) {
+	for _, widgetStruct := range f.widgets {
+		widgetEventTypes, widgetListeners := widgetStruct.widget.Init()
+		eventTypes = append(eventTypes, widgetEventTypes...)
+		listeners = append(listeners, widgetListeners...)
+	}
+	return eventTypes, listeners
+}
+
+func NewFixedLayout(widgets []FixedLayoutArg) *FixedLayout {
+	return &FixedLayout{widgets: widgets}
 }
