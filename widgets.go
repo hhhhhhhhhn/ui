@@ -8,15 +8,16 @@ type Button struct {
 	Widget
 	TextWidget
 	ShapeWidget
-	rectangle    *Rectangle
-	text         *Text
-	normalColor  Color
-	hoverColor   Color
-	isHovering   bool
-	x            float32
-	y            float32
-	width        float32
-	height       float32
+	rectangle        *Rectangle
+	text             *Text
+	normalColor      Color
+	hoverColor       Color
+	isHovering       bool
+	onClickListeners []func()
+	x                float32
+	y                float32
+	width            float32
+	height           float32
 }
 
 func (b *Button) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
@@ -51,7 +52,14 @@ func (b *Button) Init() ([]string, []func(Event)) {
 			}
 		}
 	}
-	return []string{"mouseMove"}, []func(Event){onMouseMove}
+	
+	leftClickUp := func(Event) {
+		if b.isHovering {
+			b.Click()
+		}
+	}
+
+	return []string{"mouseMove", "leftClickUp"}, []func(Event){onMouseMove, leftClickUp}
 }
 
 func isWithin(pointX, pointY, hitboxX, hitboxY, hitboxWidth, hitboxHeight float32) bool {
@@ -107,6 +115,18 @@ func (b *Button) SetOutlineColor(color Color) *Button {
 
 func (b *Button) SetOutlineThickness(thickness float32) *Button {
 	b.rectangle.SetOutlineThickness(thickness)
+	return b
+}
+
+func (b *Button) Click() *Button {
+	for _, listener := range b.onClickListeners {
+		listener()
+	}
+	return b
+}
+
+func (b *Button) OnClick(handler func()) *Button {
+	b.onClickListeners = append(b.onClickListeners, handler)
 	return b
 }
 

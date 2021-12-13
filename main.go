@@ -2,6 +2,7 @@ package main
 
 import (
 	"runtime"
+	"fmt"
 
 	"gopkg.in/teh-cmc/go-sfml.v24/graphics"
 	"gopkg.in/teh-cmc/go-sfml.v24/window"
@@ -115,6 +116,14 @@ func (app *App) Run() {
 					eventListener(Event{"x": x, "y": y})
 				}
 				break
+			case window.SfEventType(window.SfEvtMouseButtonReleased):
+				button := event.GetMouseButton()
+				if button.GetButton() == window.SfMouseButton(window.SfMouseLeft) {
+					for _, eventListener := range app.eventListeners["leftClickUp"] {
+						eventListener(Event{})
+					}
+				}
+				break
 			}
 		}
 		graphics.SfRenderWindow_clear(app.window, graphics.GetSfWhite())
@@ -139,85 +148,11 @@ func main() {
 		{NewCircle().SetBackgroundColor(Color{255,255,0,255}), 200, 200, 200, 200},
 		{NewRectangle().SetBackgroundColor(Color{0,0,255,255}), 400, 300, 200, 200},
 		{NewText(f, 40).SetContent("Color").SetColor(Color{255,255,0,100}), 400, 300, 200, 200},
-		{NewButton(f, 40).SetContent("Button").SetColor(Color{255,255,0,255}).SetBackgroundColor(Color{0,0,0,255}).SetHoverBackgroundColor(Color{100,100,100,255}), 700, 300, 200, 200},
+		{NewButton(f, 40).SetContent("Button").SetColor(Color{255,255,0,255}).SetBackgroundColor(Color{0,0,0,255}).SetHoverBackgroundColor(Color{100,100,100,255}).OnClick(func(){fmt.Println("sada")}), 700, 300, 200, 200},
 	})
 	app := NewApp("New app", 800, 600, root)
 	app.Run()
 	app.Clean()
-}
 
-//func main() {
-//	vm := window.NewSfVideoMode()
-//	defer window.DeleteSfVideoMode(vm)
-//	vm.SetWidth(800)
-//	vm.SetHeight(600)
-//	vm.SetBitsPerPixel(32)
-//
-//	/* Create the main window */
-//	cs := window.NewSfContextSettings()
-//	defer window.DeleteSfContextSettings(cs)
-//	w := graphics.SfRenderWindow_create(vm, "SFML window", uint(window.SfResize|window.SfClose), cs)
-//	defer window.SfWindow_destroy(w)
-//	view := graphics.SfRenderWindow_getDefaultView(w)
-//	defer graphics.SfView_destroy(view)
-//
-//	ev := window.NewSfEvent()
-//	defer window.DeleteSfEvent(ev)
-//
-//	circle := graphics.SfCircleShape_create()
-//	position := system.NewSfVector2f()
-//	position.SetX(10)
-//	position.SetY(10)
-//	graphics.SfCircleShape_setFillColor(circle, graphics.GetSfBlack())
-//	graphics.SfCircleShape_setPosition(circle, position)
-//	graphics.SfCircleShape_setRadius(circle, 10)
-//
-//	c := NewCircle(Color{255, 0, 255, 255})
-//	c2 := NewCircle(Color{0, 0, 255, 255})
-//	c3 := NewCircle(Color{0, 255, 255, 100})
-//	f := LoadFont("/usr/share/fonts/TTF/DejaVuSans.ttf")
-//	t := NewText(f, Color{0,0,0,255}, 20, "Text text text text text text text text text text text sdf¿sdf sdf sdf skjdfvbhs kdjfhsdfkghdkfuhgsd fjksgdfquisefhsf sdiufh sidfhsidf sdfiuhsd")
-//	c3.SetOutlineColor(Color{255, 0, 255, 255})
-//	c3.SetOutlineThickness(20)
-//	c4 := NewCircle(Color{0, 100, 100, 255})
-//	c5 := NewRectangle(Color{0, 0, 255, 25})
-//
-//	/* Start the game loop */
-//	for window.SfWindow_isOpen(w) > 0 {
-//		/* Process events */
-//		for window.SfWindow_pollEvent(w, ev) > 0 {
-//			/* Close window: exit */
-//			switch(ev.GetXtype()) {
-//			case window.SfEventType(window.SfEvtClosed):
-//				return
-//			case window.SfEventType(window.SfEvtResized):
-//				size := ev.GetSize()
-//
-//				newSize := system.NewSfVector2f()
-//				newSize.SetX(float32(size.GetWidth()))
-//				newSize.SetY(float32(size.GetHeight()))
-//
-//				center := system.NewSfVector2f()
-//				center.SetX(float32(size.GetWidth() / 2))
-//				center.SetY(float32(size.GetHeight() / 2))
-//
-//				graphics.SfView_setCenter(view, center)
-//
-//				graphics.SfView_setSize(view, newSize)
-//				graphics.SfRenderWindow_setView(w, view)
-//				break
-//			}
-//		}
-//		graphics.SfRenderWindow_clear(w, graphics.GetSfWhite())
-//		c.Draw(w, 40, 40, 60, 60)
-//		c2.Draw(w, 100, 40, 100, 100)
-//		c3.Draw(w, 400, 350, 60, 60)
-//		c4.Draw(w, 700, 400, 60, 60)
-//		c5.Draw(w, 600, 300, 1000, 2500)
-//		t.Draw(w, 400, 300, 300, 9)
-//		graphics.SfRenderWindow_drawShape(w, circle, graphics.SwigcptrSfRenderStates(0))
-//		graphics.SfRenderWindow_display(w)
-//	}
-//
-//	c.Clean()
-//}
+	fmt.Println("Done")
+}
