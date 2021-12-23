@@ -138,13 +138,17 @@ func (app *App) AddEventListener(eventType string, listener func(Event)) {
 
 func (app *App) Clean() {
 	app.root.Clean()
+	//graphics.SfView_destroy(app.view)
 	window.SfWindow_destroy(app.window)
-	graphics.SfView_destroy(app.view)
 }
 
 func main() {
 	f := LoadFont("/usr/share/fonts/TTF/DejaVuSans.ttf")
 	root := NewFixedLayout([]FixedLayoutArg{
+		{NewGridLayout([]GridLayoutArg{
+			{NewRectangle().SetOutlineColor(Color{0,0,0,255}).SetOutlineThickness(5), 1, 1, 3, 3},
+			{NewRectangle().SetOutlineColor(Color{0,0,0,255}).SetOutlineThickness(2), 0, 0, 1, 1},
+		}, 5, 5), 500, 500, 500, 500},
 		{NewCircle().SetBackgroundColor(Color{255,255,0,255}), 200, 200, 200, 200},
 		{NewRectangle().SetBackgroundColor(Color{0,0,255,255}), 400, 300, 200, 200},
 		{NewText(f, 40).SetContent("Color").SetColor(Color{255,255,0,100}), 400, 300, 200, 200},
