@@ -25,6 +25,7 @@ type Text struct {
 	position  system.SfVector2f
 	redraw    bool
 	width     float32
+	height    float32
 	fontSize  uint
 	content   string
 	font      Font
@@ -32,12 +33,13 @@ type Text struct {
 
 func (t *Text) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
 	width float32, height float32) {
-		if width != t.width || t.redraw {
+		if width != t.width || height != t.height || t.redraw {
 			graphics.SfText_setString(
 				t.text,
-				wrapWords(t.content, t.font, t.fontSize, width),
+				wrapWords(t.content, t.font, t.fontSize, width, height),
 			)
 			t.width = width
+			t.height = height
 			t.redraw = false
 		}
 
@@ -86,16 +88,21 @@ func NewText(font Font, fontSize uint) *Text {
 	return &Text{text: text, position: position, fontSize: fontSize, font: font}
 }
 
-func wrapWords(content string, font Font, fontSize uint, width float32) string {
+func wrapWords(content string, font Font, fontSize uint, width, height float32) string {
 	newContent := []rune(content)
 	xPosition := float32(0) // Relative to the top-left corner
+	yPosition := fontSize
 	wordIndex := 0 // Relative to the current line
 	lastSpaceIndex := 0
 
 	for i := 0; i < len(newContent); i++ {
+		if float32(yPosition) > height {
+			return string(newContent[:i])
+		}
 		switch (newContent[i]) {
 		case '\n':
 			xPosition = 0
+			yPosition += fontSize
 			wordIndex = 0
 			break
 		case ' ':
@@ -112,6 +119,7 @@ func wrapWords(content string, font Font, fontSize uint, width float32) string {
 				newContent[lastSpaceIndex] = '\n'
 				wordIndex = 0
 				xPosition = 0
+				yPosition += fontSize
 				i = lastSpaceIndex
 			}
 		}
