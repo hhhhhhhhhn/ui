@@ -90,8 +90,9 @@ func NewText(font Font, fontSize uint) *Text {
 
 func wrapWords(content string, font Font, fontSize uint, width, height float32) string {
 	newContent := []rune(content)
+	lineSpacing := graphics.SfFont_getLineSpacing(font, fontSize)
 	xPosition := float32(0) // Relative to the top-left corner
-	yPosition := fontSize
+	yPosition := lineSpacing
 	wordIndex := 0 // Relative to the current line
 	lastSpaceIndex := 0
 
@@ -102,12 +103,16 @@ func wrapWords(content string, font Font, fontSize uint, width, height float32) 
 		switch (newContent[i]) {
 		case '\n':
 			xPosition = 0
-			yPosition += fontSize
+			yPosition += lineSpacing
 			wordIndex = 0
 			break
 		case ' ':
 			lastSpaceIndex = i
 			wordIndex++
+			xPosition += graphics.SfFont_getGlyph(font, uint(newContent[i]), fontSize, 0, 0).GetAdvance()
+			if i != 0 {
+				xPosition += graphics.SfFont_getKerning(font, uint(newContent[i-1]), uint(newContent[i]), fontSize)
+			}
 			break
 		default:
 			xPosition += graphics.SfFont_getGlyph(font, uint(newContent[i]), fontSize, 0, 0).GetAdvance()
@@ -119,7 +124,7 @@ func wrapWords(content string, font Font, fontSize uint, width, height float32) 
 				newContent[lastSpaceIndex] = '\n'
 				wordIndex = 0
 				xPosition = 0
-				yPosition += fontSize
+				yPosition += lineSpacing
 				i = lastSpaceIndex
 			}
 		}
