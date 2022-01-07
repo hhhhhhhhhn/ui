@@ -60,6 +60,7 @@ func (t *Text) Init() ([]string, []func(Event)) {
 }
 
 func (t *Text) SetFont(font Font) *Text {
+	t.font = font
 	graphics.SfText_setFont(t.text, font)
 	return t
 }
@@ -71,6 +72,7 @@ func (t *Text) SetContent(content string) *Text {
 }
 
 func (t *Text) SetFontSize(fontSize uint) *Text {
+	t.fontSize = fontSize
 	graphics.SfText_setCharacterSize(t.text, fontSize)
 	return t
 }
@@ -79,13 +81,11 @@ func (t *Text) SetColor(color Color) *Text {
 	return t
 }
 
-func NewText(font Font, fontSize uint) *Text {
+func NewText() *Text {
 	text := graphics.SfText_create()
-	graphics.SfText_setFont(text, font)
-	graphics.SfText_setCharacterSize(text, fontSize)
 
 	position := system.NewSfVector2f()
-	return &Text{text: text, position: position, fontSize: fontSize, font: font}
+	return &Text{text: text, position: position}
 }
 
 func wrapWords(content string, font Font, fontSize uint, width, height float32) string {

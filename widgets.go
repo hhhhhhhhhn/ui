@@ -107,8 +107,8 @@ func (b *Button) OnClick(handler func()) *Button {
 	return b
 }
 
-func NewButton(font Font, fontSize uint) *Button {
-	text := NewText(font, fontSize)
+func NewButton() *Button {
+	text := NewText()
 	rectangle := NewRectangle()
 	return &Button{text: text, rectangle: rectangle}
 }
@@ -248,8 +248,8 @@ func (t *TextInput) SetOutlineThickness(thickness float32) *TextInput {
 	return t
 }
 
-func NewTextInput(font Font, fontSize uint) *TextInput {
-	text := NewText(font, fontSize)
+func NewTextInput() *TextInput {
+	text := NewText()
 	rectangle := NewRectangle()
 	return &TextInput{text: text, rectangle: rectangle}
 }
