@@ -24,7 +24,7 @@ func (b *Button) Draw(t Texture, x float32, y float32,
 	width float32, height float32) {
 		b.bounds.Update(x, y, width, height)
 		b.rectangle.Draw(t, x, y, width, height)
-		b.text.Draw(t, x, y, width, height)
+		b.text.Draw(t, x + b.rectangle.outlineThickness, y + b.rectangle.outlineThickness, width, height)
 }
 
 func (b *Button) Clean() {
@@ -127,11 +127,11 @@ type TextInput struct {
 	onChangeListeners []func(string)
 }
 
-func (t *TextInput) Draw(w Texture, x float32, y float32,
+func (t *TextInput) Draw(tx Texture, x float32, y float32,
 	width float32, height float32) {
 		t.bounds.Update(x, y, width, height)
-		t.rectangle.Draw(w, x, y, width, height)
-		t.text.Draw(w, x, y, width, height)
+		t.rectangle.Draw(tx, x, y, width, height)
+		t.text.Draw(tx, x + t.rectangle.outlineThickness, y + t.rectangle.outlineThickness, width, height)
 }
 
 func (t *TextInput) Clean() {

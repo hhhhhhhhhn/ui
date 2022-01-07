@@ -14,21 +14,22 @@ type ShapeWidget interface {
 
 type Circle struct {
 	ShapeWidget
-	circle   graphics.Struct_SS_sfCircleShape
-	position system.SfVector2f
+	circle           graphics.Struct_SS_sfCircleShape
+	position         system.SfVector2f
+	outlineThickness float32
 }
 
 func (c *Circle) Draw(t Texture, x float32, y float32,
 	width float32, height float32) {
 		if width < height {
-			graphics.SfCircleShape_setRadius(c.circle, width / 2)
+			graphics.SfCircleShape_setRadius(c.circle, width / 2 - c.outlineThickness)
 			y += (height - width) / 2
 		} else {
-			graphics.SfCircleShape_setRadius(c.circle, height / 2)
+			graphics.SfCircleShape_setRadius(c.circle, height / 2 - c.outlineThickness)
 			x += (width - height) / 2
 		}
-		c.position.SetX(x)
-		c.position.SetY(y)
+		c.position.SetX(x + c.outlineThickness)
+		c.position.SetY(y + c.outlineThickness)
 
 		graphics.SfCircleShape_setPosition(c.circle, c.position)
 		graphics.SfRenderTexture_drawShape(t, c.circle, graphics.SwigcptrSfRenderStates(0))
@@ -49,6 +50,7 @@ func (c *Circle) SetOutlineColor(color Color) *Circle {
 }
 
 func (c *Circle) SetOutlineThickness(thickness float32) *Circle {
+	c.outlineThickness = thickness
 	graphics.SfCircleShape_setOutlineThickness(c.circle, thickness)
 	return c
 }
@@ -69,16 +71,17 @@ type Rectangle struct {
 	rectangle graphics.Struct_SS_sfRectangleShape
 	position  system.SfVector2f
 	size      system.SfVector2f
+	outlineThickness float32
 }
 
 func (r *Rectangle) Draw(t Texture, x float32, y float32,
 	width float32, height float32) {
-		r.position.SetX(x)
-		r.position.SetY(y)
+		r.position.SetX(x + r.outlineThickness)
+		r.position.SetY(y + r.outlineThickness)
 		graphics.SfRectangleShape_setPosition(r.rectangle, r.position)
 
-		r.size.SetX(width)
-		r.size.SetY(height)
+		r.size.SetX(width - 2 * r.outlineThickness)
+		r.size.SetY(height - 2 * r.outlineThickness)
 		graphics.SfRectangleShape_setSize(r.rectangle, r.size)
 
 		graphics.SfRenderTexture_drawShape(t, r.rectangle, graphics.SwigcptrSfRenderStates(0))
@@ -100,6 +103,7 @@ func (r *Rectangle) SetOutlineColor(color Color) *Rectangle {
 }
 
 func (r *Rectangle) SetOutlineThickness(thickness float32) *Rectangle {
+	r.outlineThickness = thickness
 	graphics.SfRectangleShape_setOutlineThickness(r.rectangle, thickness)
 	return r
 }
