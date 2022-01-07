@@ -10,9 +10,11 @@ import (
 
 func init() { runtime.LockOSThread() }
 
+type Texture graphics.Struct_SS_sfRenderTexture
+
 type Widget interface {
 	Draw(
-		w graphics.Struct_SS_sfRenderWindow,
+		t Texture,
 		x float32,
 		y float32,
 		width float32,
@@ -44,6 +46,8 @@ func (color *Color) ToSFColor() graphics.SfColor {
 type App struct {
 	window         graphics.Struct_SS_sfRenderWindow
 	view           graphics.Struct_SS_sfView
+	texture        graphics.Struct_SS_sfTexture
+	textureSprite  graphics.Struct_SS_sfSprite
 	root           Widget
 	eventListeners map[string][]func(Event)
 	width          float32
@@ -60,9 +64,11 @@ func NewApp(title string, width uint, height uint, root Widget) (app App) {
 	cs := window.NewSfContextSettings()
 	defer window.DeleteSfContextSettings(cs)
 
-	app.window = graphics.SfRenderWindow_create(vm, title, uint(window.SfResize|window.SfClose), cs)
-	app.view   = graphics.SfRenderWindow_getDefaultView(app.window)
-	app.root   = root
+	app.textureSprite = graphics.SfSprite_create()
+	app.texture	      = graphics.SfRenderTexture_create(width, height, 0)
+	app.window        = graphics.SfRenderWindow_create(vm, title, uint(window.SfResize|window.SfClose), cs)
+	app.view          = graphics.SfRenderWindow_getDefaultView(app.window)
+	app.root          = root
 
 	eventTypes, listeners := root.Init()
 	app.eventListeners = make(map[string][]func(Event))
@@ -106,6 +112,8 @@ func (app *App) Run() {
 				
 				app.height = float32(size.GetHeight())
 				app.width  = float32(size.GetWidth())
+				graphics.SfTexture_destroy(app.texture)
+				app.texture = graphics.SfRenderTexture_create(size.GetWidth(), size.GetHeight(), 0)
 				break
 			case window.SfEventType(window.SfEvtMouseMoved):
 				mouseMove := event.GetMouseMove()
@@ -149,8 +157,12 @@ func (app *App) Run() {
 				break
 			}
 		}
-		graphics.SfRenderWindow_clear(app.window, graphics.GetSfWhite())
-		app.root.Draw(app.window, 0, 0, app.width, app.height)
+		graphics.SfRenderTexture_clear(app.texture, graphics.GetSfWhite())
+		//graphics.SfRenderWindow_clear(app.window, graphics.GetSfWhite())
+		app.root.Draw(app.texture, 0, 0, app.width, app.height)
+		graphics.SfRenderTexture_display(app.texture)
+		graphics.SfSprite_setTexture(app.textureSprite, graphics.SfRenderTexture_getTexture(app.texture), 1)
+		graphics.SfRenderWindow_drawSprite(app.window, app.textureSprite, graphics.SwigcptrSfRenderStates(0))
 		graphics.SfRenderWindow_display(app.window)
 	}
 }
@@ -162,5 +174,6 @@ func (app *App) AddEventListener(eventType string, listener func(Event)) {
 func (app *App) Clean() {
 	app.root.Clean()
 	//graphics.SfView_destroy(app.view)
+	graphics.SfTexture_destroy(app.texture)
 	window.SfWindow_destroy(app.window)
 }

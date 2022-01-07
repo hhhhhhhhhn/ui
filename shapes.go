@@ -18,7 +18,7 @@ type Circle struct {
 	position system.SfVector2f
 }
 
-func (c *Circle) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
+func (c *Circle) Draw(t Texture, x float32, y float32,
 	width float32, height float32) {
 		if width < height {
 			graphics.SfCircleShape_setRadius(c.circle, width / 2)
@@ -31,7 +31,7 @@ func (c *Circle) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
 		c.position.SetY(y)
 
 		graphics.SfCircleShape_setPosition(c.circle, c.position)
-		graphics.SfRenderWindow_drawShape(w, c.circle, graphics.SwigcptrSfRenderStates(0))
+		graphics.SfRenderTexture_drawShape(t, c.circle, graphics.SwigcptrSfRenderStates(0))
 }
 
 func (c *Circle) Clean() {
@@ -71,7 +71,7 @@ type Rectangle struct {
 	size      system.SfVector2f
 }
 
-func (r *Rectangle) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
+func (r *Rectangle) Draw(t Texture, x float32, y float32,
 	width float32, height float32) {
 		r.position.SetX(x)
 		r.position.SetY(y)
@@ -81,7 +81,7 @@ func (r *Rectangle) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float
 		r.size.SetY(height)
 		graphics.SfRectangleShape_setSize(r.rectangle, r.size)
 
-		graphics.SfRenderWindow_drawShape(w, r.rectangle, graphics.SwigcptrSfRenderStates(0))
+		graphics.SfRenderTexture_drawShape(t, r.rectangle, graphics.SwigcptrSfRenderStates(0))
 }
 
 func (r *Rectangle) Clean() {

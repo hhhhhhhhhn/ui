@@ -31,7 +31,7 @@ type Text struct {
 	font      Font
 }
 
-func (t *Text) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
+func (t *Text) Draw(w Texture, x float32, y float32,
 	width float32, height float32) {
 		if width != t.width || height != t.height || t.redraw {
 			graphics.SfText_setString(
@@ -47,7 +47,7 @@ func (t *Text) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
 		t.position.SetY(y)
 		graphics.SfText_setPosition(t.text, t.position)
 
-		graphics.SfRenderWindow_drawText(w, t.text, graphics.SwigcptrSfRenderStates(0))
+		graphics.SfRenderTexture_drawText(w, t.text, graphics.SwigcptrSfRenderStates(0))
 }
 
 func (t *Text) Clean() {

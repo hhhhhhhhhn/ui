@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gopkg.in/teh-cmc/go-sfml.v24/graphics"
+	//"gopkg.in/teh-cmc/go-sfml.v24/graphics"
 )
 
 type FixedLayoutArg struct {
@@ -17,11 +17,11 @@ type FixedLayout struct {
 	widgets []FixedLayoutArg
 }
 
-func (f *FixedLayout) Draw(w graphics.Struct_SS_sfRenderWindow, x float32,
+func (f *FixedLayout) Draw(t Texture, x float32,
 	y float32, width float32, height float32) {
 		for _, widgetStruct := range f.widgets {
 			widgetStruct.widget.Draw(
-				w,
+				t,
 				widgetStruct.x + x,
 				widgetStruct.y + y,
 				widgetStruct.width,
@@ -68,14 +68,14 @@ type GridLayout struct {
 	widgets     []GridLayoutArg
 }
 
-func (g *GridLayout) Draw(w graphics.Struct_SS_sfRenderWindow, x float32,
+func (g *GridLayout) Draw(t Texture, x float32,
 	y float32, width float32, height float32) {
 		if width != g.lastWidth || height != g.lastHeight {
 			g.calculateRowsAndColumns(width, height)
 		}
 		for _, widgetStruct := range g.widgets {
 			widgetStruct.widget.Draw(
-				w,
+				t,
 				float32(widgetStruct.x) * g.columnWidth + x,
 				float32(widgetStruct.y) * g.rowHeight + x,
 				float32(widgetStruct.width) * g.columnWidth,

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gopkg.in/teh-cmc/go-sfml.v24/graphics"
+	//"gopkg.in/teh-cmc/go-sfml.v24/graphics"
 	"gopkg.in/teh-cmc/go-sfml.v24/window"
 
 	"unicode"
@@ -20,11 +20,11 @@ type Button struct {
 	bounds           BoundingBox
 }
 
-func (b *Button) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
+func (b *Button) Draw(t Texture, x float32, y float32,
 	width float32, height float32) {
 		b.bounds.Update(x, y, width, height)
-		b.rectangle.Draw(w, x, y, width, height)
-		b.text.Draw(w, x, y, width, height)
+		b.rectangle.Draw(t, x, y, width, height)
+		b.text.Draw(t, x, y, width, height)
 }
 
 func (b *Button) Clean() {
@@ -127,7 +127,7 @@ type TextInput struct {
 	onChangeListeners []func(string)
 }
 
-func (t *TextInput) Draw(w graphics.Struct_SS_sfRenderWindow, x float32, y float32,
+func (t *TextInput) Draw(w Texture, x float32, y float32,
 	width float32, height float32) {
 		t.bounds.Update(x, y, width, height)
 		t.rectangle.Draw(w, x, y, width, height)
