@@ -155,6 +155,14 @@ func (app *App) Run() {
 					}
 				}
 				break
+			case window.SfEventType(window.SfEvtMouseButtonPressed):
+				button := event.GetMouseButton()
+				if button.GetButton() == window.SfMouseButton(window.SfMouseLeft) {
+					for _, eventListener := range app.eventListeners["leftClickDown"] {
+						eventListener(Event{})
+					}
+				}
+				break
 			}
 		}
 		graphics.SfRenderTexture_clear(app.texture, graphics.GetSfWhite())

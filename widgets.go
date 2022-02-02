@@ -253,3 +253,98 @@ func NewTextInput() *TextInput {
 	rectangle := NewRectangle()
 	return &TextInput{text: text, rectangle: rectangle}
 }
+
+type Slider struct {
+	background        *Rectangle
+	slider            *Rectangle
+	isHovering        bool
+	isDragging        bool
+	onChangeListeners []func(float32)
+	sliderBounds      BoundingBox
+	bounds            BoundingBox
+	value             float32
+	width             float32
+}
+
+func (s *Slider) Draw(t Texture, x float32, y float32,
+	width float32, height float32) {
+		s.background.Draw(t, x, y + ((height - s.width) / 2), width, s.width)
+		s.slider.Draw(t, x + ((width - 2 * s.width) * s.value), y + ((height - 4 * s.width) / 2), 2 * s.width, 4 * s.width)
+		s.sliderBounds.Update(x + ((width - 2 * s.width) * s.value), y + ((height - 4 * s.width) / 2), 2 * s.width, 4 * s.width)
+		s.bounds.Update(x, y, width, height)
+}
+
+func (s *Slider) Clean() {
+	s.background.Clean()
+	s.slider.Clean()
+}
+
+func (s *Slider) Init() ([]string, []func(Event)) {
+	detectHover := CreateHoverEventListener(
+		&s.sliderBounds,
+		&s.isHovering,
+		func() {},
+		func() {},
+	)
+
+	onMouseMove := func(event Event) {
+		detectHover(event)
+		x := float32(event["x"].(int))
+
+		if s.isDragging {
+			s.Change((x - s.bounds.X) / s.bounds.Width)
+		}
+	}
+
+	leftClickDown := func(Event) {
+		if s.isHovering {
+			s.isDragging = true
+		}
+	}
+
+	leftClickUp := func(Event) {
+		s.isDragging = false
+	}
+
+	return []string{"mouseMove", "leftClickUp", "leftClickDown"},
+		[]func(Event){onMouseMove, leftClickUp, leftClickDown}
+}
+
+func (s *Slider) SetBackgroundColor(color Color) *Slider {
+	s.background.SetBackgroundColor(color)
+	return s
+}
+
+func (s *Slider) SetSliderColor(color Color) *Slider {
+	s.slider.SetBackgroundColor(color)
+	return s
+}
+
+func (s *Slider) SetWidth (width float32) *Slider {
+	s.width = width
+	return s
+}
+
+func (s *Slider) Change(value float32) *Slider {
+	s.value = value
+	if s.value < 0 {
+		s.value = 0
+	} else if s.value > 1 {
+		s.value = 1
+	}
+	for _, listener := range s.onChangeListeners {
+		listener(s.value)
+	}
+	return s
+}
+
+func (s *Slider) OnChange(handler func(float32)) *Slider {
+	s.onChangeListeners = append(s.onChangeListeners, handler)
+	return s
+}
+
+func NewSlider() *Slider {
+	background := NewRectangle()
+	slider := NewRectangle()
+	return &Slider{background: background, slider: slider}
+}
