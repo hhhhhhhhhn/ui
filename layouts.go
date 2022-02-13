@@ -1,8 +1,11 @@
 package main
 
 import (
-	//"gopkg.in/teh-cmc/go-sfml.v24/graphics"
+	"gopkg.in/teh-cmc/go-sfml.v24/graphics"
+	"gopkg.in/teh-cmc/go-sfml.v24/system"
 )
+
+//"gopkg.in/teh-cmc/go-sfml.v24/graphics"
 
 type FixedLayoutArg struct {
 	widget Widget
@@ -13,7 +16,6 @@ type FixedLayoutArg struct {
 }
 
 type FixedLayout struct {
-	Widget
 	widgets []FixedLayoutArg
 }
 
@@ -58,7 +60,6 @@ type GridLayoutArg struct {
 }
 
 type GridLayout struct {
-	Widget
 	rows        int
 	columns     int
 	rowHeight   float32
@@ -108,4 +109,96 @@ func (g *GridLayout) Init() (eventTypes []string, listeners []func(Event)) {
 
 func NewGridLayout(widgets []GridLayoutArg, rows, columns int) *GridLayout {
 	return &GridLayout{widgets: widgets, rows: rows, columns: columns}
+}
+
+type FixedScrollLayoutArg struct {
+	widget Widget
+	x      float32
+	y      float32
+	width  float32
+	height float32
+}
+
+type FixedScrollLayout struct {
+	widgets  []FixedScrollLayoutArg
+	texture  Texture
+	sprite   graphics.Struct_SS_sfSprite
+	position system.SfVector2f
+	scroll   float32
+	width    float32
+	height   float32
+}
+
+func (f *FixedScrollLayout) resize(width, height float32) {
+	f.texture = graphics.SfRenderTexture_create(uint(width), uint(height), 0)
+}
+
+func (f *FixedScrollLayout) Draw(t Texture, x float32,
+	y float32, width float32, height float32) {
+		if width != f.width || height != f.height {
+			f.resize(width, height)
+			f.width = width
+			f.height = height
+		}
+
+		graphics.SfRenderTexture_clear(f.texture, graphics.GetSfWhite())
+		for _, widgetStruct := range f.widgets {
+			// Is in the top
+			if widgetStruct.y - f.scroll + widgetStruct.height < 0 {
+				continue
+			}
+			// Is in the bottom
+			if widgetStruct.y - f.scroll > height {
+				continue
+			}
+			widgetStruct.widget.Draw(
+				f.texture,
+				widgetStruct.x,
+				widgetStruct.y - f.scroll,
+				widgetStruct.width,
+				widgetStruct.height,
+			)
+		}
+
+		graphics.SfRenderTexture_display(f.texture)
+		graphics.SfSprite_setTexture(f.sprite, graphics.SfRenderTexture_getTexture(f.texture), 1)
+
+		f.position.SetX(x)
+		f.position.SetY(y)
+		graphics.SfSprite_setPosition(f.sprite, f.position)
+
+		graphics.SfRenderTexture_drawSprite(t, f.sprite, graphics.SwigcptrSfRenderStates(0))
+}
+
+func (f *FixedScrollLayout) Clean() {
+	for _, widgetStruct := range f.widgets {
+		widgetStruct.widget.Clean()
+	}
+	graphics.SfRenderTexture_destroy(f.texture)
+}
+
+func (f *FixedScrollLayout) Init() (eventTypes []string, listeners []func(Event)) {
+	for _, widgetStruct := range f.widgets {
+		widgetEventTypes, widgetListeners := widgetStruct.widget.Init()
+		eventTypes = append(eventTypes, widgetEventTypes...)
+		listeners = append(listeners, widgetListeners...)
+	}
+	return eventTypes, listeners
+}
+
+func (f *FixedScrollLayout) SetScroll(scroll float32) *FixedScrollLayout {
+	f.scroll = scroll
+	return f
+}
+
+func (f *FixedScrollLayout) GetScroll() float32 {
+	return f.scroll
+}
+
+func NewFixedScrollLayout(widgets []FixedScrollLayoutArg) *FixedScrollLayout {
+	layout := &FixedScrollLayout{}
+	layout.position = system.NewSfVector2f()
+	layout.sprite = graphics.SfSprite_create()
+	layout.widgets = widgets
+	return layout
 }

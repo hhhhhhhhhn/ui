@@ -13,7 +13,6 @@ type ShapeWidget interface {
 }
 
 type Circle struct {
-	ShapeWidget
 	circle           graphics.Struct_SS_sfCircleShape
 	position         system.SfVector2f
 	outlineThickness float32

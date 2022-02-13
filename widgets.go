@@ -8,9 +8,6 @@ import (
 )
 
 type Button struct {
-	Widget
-	TextWidget
-	ShapeWidget
 	rectangle        *Rectangle
 	text             *Text
 	normalColor      Color
@@ -114,9 +111,6 @@ func NewButton() *Button {
 }
 
 type TextInput struct {
-	Widget
-	TextWidget
-	ShapeWidget
 	rectangle         *Rectangle
 	text              *Text
 	bounds            BoundingBox

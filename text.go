@@ -20,7 +20,6 @@ type TextWidget interface {
 }
 
 type Text struct {
-	TextWidget
 	text      graphics.Struct_SS_sfText
 	position  system.SfVector2f
 	redraw    bool
