@@ -120,23 +120,37 @@ type FixedScrollLayoutArg struct {
 }
 
 type FixedScrollLayout struct {
-	widgets  []FixedScrollLayoutArg
-	texture  Texture
-	sprite   graphics.Struct_SS_sfSprite
-	position system.SfVector2f
-	scroll   float32
-	width    float32
-	height   float32
+	widgets           []FixedScrollLayoutArg
+	texture           Texture
+	view              graphics.Struct_SS_sfView
+	sprite            graphics.Struct_SS_sfSprite
+	position          system.SfVector2f
+	bottom            float32
+	scroll            float32
+	width             float32
+	height            float32
+	onScrollListeners []func(float32)
 }
 
-func (f *FixedScrollLayout) resize(width, height float32) {
+func (f *FixedScrollLayout) resize(x, y, width, height float32) {
+	size := system.NewSfVector2f()
+	size.SetX(width); size.SetY(height)
+
+	center := system.NewSfVector2f()
+	center.SetX(width / 2 + x); center.SetY(height / 2 + y)
+
+	graphics.SfView_setCenter(f.view, center)
+	graphics.SfView_setSize(f.view, size)
+
 	f.texture = graphics.SfRenderTexture_create(uint(width), uint(height), 0)
+
+	graphics.SfRenderTexture_setView(f.texture, f.view)
 }
 
 func (f *FixedScrollLayout) Draw(t Texture, x float32,
 	y float32, width float32, height float32) {
 		if width != f.width || height != f.height {
-			f.resize(width, height)
+			f.resize(x, y, width, height)
 			f.width = width
 			f.height = height
 		}
@@ -153,8 +167,8 @@ func (f *FixedScrollLayout) Draw(t Texture, x float32,
 			}
 			widgetStruct.widget.Draw(
 				f.texture,
-				widgetStruct.x,
-				widgetStruct.y - f.scroll,
+				x + widgetStruct.x,
+				y + widgetStruct.y - f.scroll,
 				widgetStruct.width,
 				widgetStruct.height,
 			)
@@ -186,13 +200,28 @@ func (f *FixedScrollLayout) Init() (eventTypes []string, listeners []func(Event)
 	return eventTypes, listeners
 }
 
-func (f *FixedScrollLayout) SetScroll(scroll float32) *FixedScrollLayout {
+func (f *FixedScrollLayout) Scroll(scroll float32) *FixedScrollLayout {
+	if scroll > f.bottom {
+		scroll = f.bottom
+	}
 	f.scroll = scroll
+	for _, handler := range f.onScrollListeners {
+		handler(scroll)
+	}
 	return f
 }
 
-func (f *FixedScrollLayout) GetScroll() float32 {
-	return f.scroll
+func (f *FixedScrollLayout) OnScroll(handler func(float32)) *FixedScrollLayout {
+	f.onScrollListeners = append(f.onScrollListeners, handler)
+	return f
+}
+
+func (f *FixedScrollLayout) SetBottom(bottom float32) *FixedScrollLayout {
+	f.bottom = bottom
+	if f.scroll > f.bottom {
+		f.scroll = f.bottom
+	}
+	return f
 }
 
 func NewFixedScrollLayout(widgets []FixedScrollLayoutArg) *FixedScrollLayout {
@@ -200,5 +229,6 @@ func NewFixedScrollLayout(widgets []FixedScrollLayoutArg) *FixedScrollLayout {
 	layout.position = system.NewSfVector2f()
 	layout.sprite = graphics.SfSprite_create()
 	layout.widgets = widgets
+	layout.view = graphics.SfView_create()
 	return layout
 }
