@@ -166,6 +166,10 @@ func (t *TextInput) Init() ([]string, []func(Event)) {
 					t.Change()
 				}
 				break
+			case window.SfKeyReturn:
+				t.content = t.content[:t.cursor] + "\n" + t.content[t.cursor:]
+				t.cursor++
+				t.Change()
 			}
 			t.updateText()
 		}
