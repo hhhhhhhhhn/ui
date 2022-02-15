@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"gopkg.in/teh-cmc/go-sfml.v24/graphics"
 	"gopkg.in/teh-cmc/go-sfml.v24/system"
 )
@@ -75,6 +77,7 @@ func (t *Text) SetFontSize(fontSize uint) *Text {
 	graphics.SfText_setCharacterSize(t.text, fontSize)
 	return t
 }
+
 func (t *Text) SetColor(color Color) *Text {
 	graphics.SfText_setFillColor(t.text, color.ToSFColor())
 	return t
@@ -130,4 +133,125 @@ func wrapWords(content string, font Font, fontSize uint, width, height float32) 
 	}
 
 	return string(newContent)
+}
+
+type AdvancedText struct {
+	texts     []graphics.Struct_SS_sfText
+	position  system.SfVector2f
+	width     float32
+	height    float32
+	alignment float32
+	fontSize  uint
+	redraw    bool
+	content   string
+	color     Color
+	font      Font
+}
+
+func NewAdvancedText() *AdvancedText {
+	position := system.NewSfVector2f()
+	return &AdvancedText{position: position, redraw: true}
+}
+
+func (a *AdvancedText) Draw(w Texture, x float32, y float32,
+	width float32, height float32) {
+		if width != a.width || height != a.height || a.redraw {
+			a.update(width, height)
+		}
+
+		a.position.SetX(x)
+		a.position.SetY(y)
+
+		for _, text := range a.texts {
+			graphics.SfText_setPosition(text, a.position)
+			graphics.SfRenderTexture_drawText(w, text, graphics.SwigcptrSfRenderStates(0))
+		}
+
+}
+
+func (a *AdvancedText) update(width, height float32) {
+	wrappedText := wrapWords(a.content, a.font, a.fontSize, width, height)
+	lines := strings.Split(wrappedText, "\n")
+
+	for len(a.texts) < len(lines) {
+		text := graphics.SfText_create()
+		graphics.SfText_setColor(text, a.color.ToSFColor())
+		graphics.SfText_setFont(text, a.font)
+		graphics.SfText_setCharacterSize(text, a.fontSize)
+		a.texts = append(a.texts, text)
+	}
+
+	lineSpacing := graphics.SfFont_getLineSpacing(a.font, a.fontSize)
+
+	for i, text := range a.texts {
+		var line string
+		if i < len(lines) {
+			line = lines[i]
+		} else {
+			line = ""
+		}
+		graphics.SfText_setString(text, line)
+		bounds := graphics.SfText_getLocalBounds(text)
+		textWidth := bounds.GetWidth()
+
+		origin := system.NewSfVector2f()
+		origin.SetY(-lineSpacing * float32(i))
+		origin.SetX((textWidth - width) * a.alignment)
+
+		graphics.SfText_setOrigin(text, origin)
+	}
+}
+
+const (
+	Left   float32 = 0
+	Center float32 = 0.5
+	Right  float32 = 1
+)
+
+func (a *AdvancedText) SetAlignment(alignment float32) *AdvancedText {
+	a.alignment = alignment
+	a.redraw = true
+	return a
+}
+
+func (a *AdvancedText) SetContent(content string) *AdvancedText {
+	a.content = content
+	a.redraw = true
+	return a
+}
+
+func (a *AdvancedText) SetFont(font Font) *AdvancedText {
+	a.font = font
+	for _, text := range a.texts {
+		graphics.SfText_setFont(text, font)
+	}
+	return a
+}
+
+func (a *AdvancedText) SetFontSize(fontSize uint) *AdvancedText {
+	a.fontSize = fontSize
+	for _, text := range a.texts {
+		graphics.SfText_setCharacterSize(text, fontSize)
+	}
+	return a
+}
+
+func (a *AdvancedText) SetColor(color Color) *AdvancedText {
+	a.color = color
+	for _, text := range a.texts {
+		graphics.SfText_setFillColor(text, color.ToSFColor())
+	}
+	return a
+}
+
+
+func (a *AdvancedText) Clean() {
+	for _, text := range a.texts {
+		graphics.SfText_destroy(text)
+	}
+	system.DeleteSfVector2f(a.position)
+}
+
+func (a *AdvancedText) Init() ([]string, []func(Event)) {
+	return []string{}, []func(Event){}
 }
